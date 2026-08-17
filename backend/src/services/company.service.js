@@ -85,8 +85,33 @@ const getCompanyProfile = async (companyId) => {
     return company;
 };
 
+const updateCompanyProfile = async (companyId, updateData) => {
+
+    const company = await Company.findByIdAndUpdate(
+        companyId,
+        {
+            companyName: updateData.companyName,
+            phone: updateData.phone,
+            website: updateData.website,
+            industry: updateData.industry,
+            description: updateData.description
+        },
+        {
+            new: true,
+            runValidators: true
+        }
+    ).select("-password");
+
+    if (!company) {
+        throw new Error("Company not found");
+    }
+
+    return company;
+};
+
 module.exports = {
     registerCompany,
     loginCompany,
-    getCompanyProfile
+    getCompanyProfile,
+    updateCompanyProfile
 };

@@ -66,8 +66,34 @@ const getCompanyProfile = async (req, res) => {
     }
 };
 
+const updateCompanyProfile = async (req, res) => {
+    try {
+
+        const company =
+            await companyService.updateCompanyProfile(
+                req.company._id,
+                req.body
+            );
+
+        res.status(200).json({
+            success: true,
+            message: "Company profile updated successfully",
+            data: company
+        });
+
+    } catch (error) {
+
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
+
 module.exports = {
     registerCompany,
     loginCompany,
-    getCompanyProfile
+    getCompanyProfile,
+    updateCompanyProfile
 };

@@ -32,5 +32,10 @@ router.get(
     authenticateCompany,
     companyController.getCompanyProfile
 );
+router.put(
+    "/profile",
+    authenticateCompany,
+    companyController.updateCompanyProfile
+);
 
 module.exports = router;
