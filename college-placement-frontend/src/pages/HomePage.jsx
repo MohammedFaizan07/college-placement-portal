@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -16,6 +17,8 @@ import {
 import { getStatistics } from "@/api/statistics.api";
 import { Button, Card, SectionHeading } from "@/components/ui-kit";
 import { Skeleton } from "@/components/Loaders";
+import LiveUpdatesSection from "@/components/LiveUpdatesSection";
+import { initializeSocket } from "@/socket/socket";
 
 const features = [
   { icon: UserRound, title: "Student Profiles", text: "Academic details, skills and resumes kept current in one verified profile." },
@@ -34,6 +37,11 @@ export default function HomePage() {
     queryKey: ["statistics"],
     queryFn: getStatistics,
   });
+
+  // Initialize Socket.IO connection on mount
+  useEffect(() => {
+    initializeSocket();
+  }, []);
 
   const stats = [
     { label: "Students", value: data?.totalStudents, icon: Users },
@@ -103,6 +111,9 @@ export default function HomePage() {
           </Card>
         </div>
       </section>
+
+      {/* Live Updates */}
+      <LiveUpdatesSection />
 
       {/* Features */}
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">

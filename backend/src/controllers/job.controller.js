@@ -1,4 +1,5 @@
 const jobService = require("../services/job.service");
+const { getIO } = require("../sockets/socket");
 
 const createJob = async (req, res) => {
     try {
@@ -7,6 +8,18 @@ const createJob = async (req, res) => {
             req.body,
             req.company._id
         );
+
+        // Emit WebSocket event for new job
+        const populatedJob = await job.populate("company", "companyName email industry website");
+        const io = getIO();
+        io.emit("job:created", {
+            jobId: job._id,
+            title: job.title,
+            company: populatedJob.company.companyName,
+            location: job.location,
+            createdAt: job.createdAt,
+            fullJob: populatedJob
+        });
 
         res.status(201).json({
             success: true,
@@ -75,6 +88,17 @@ const updateJob = async (req, res) => {
                 req.body
             );
 
+        // Emit WebSocket event for job update
+        const io = getIO();
+        io.emit("job:updated", {
+            jobId: updatedJob._id,
+            title: updatedJob.title,
+            company: updatedJob.company.companyName,
+            location: updatedJob.location,
+            updatedAt: updatedJob.updatedAt,
+            fullJob: updatedJob
+        });
+
         res.status(200).json({
             success: true,
             message: "Job updated successfully",
@@ -94,10 +118,25 @@ const updateJob = async (req, res) => {
 const deleteJob = async (req, res) => {
     try {
 
+        // Get job details before deletion for the event
+        const Job = require("../models/job.model");
+        const jobDetails = await Job.findById(req.params.jobId).populate("company", "companyName");
+
         await jobService.deleteJob(
             req.params.jobId,
             req.company._id
         );
+
+        // Emit WebSocket event for job deletion
+        if (jobDetails) {
+            const io = getIO();
+            io.emit("job:deleted", {
+                jobId: jobDetails._id,
+                title: jobDetails.title,
+                company: jobDetails.company.companyName,
+                deletedAt: new Date()
+            });
+        }
 
         res.status(200).json({
             success: true,
